@@ -27,3 +27,11 @@
 /fuse_scr.bin
 /rcw_pbi_sec.bin
 /secboot_hdrs*.bin
+
+# Debian package build
+/debian/cst/
+/debian/.debhelper/
+/debian/debhelper-build-stamp
+/debian/files
+/debian/*.substvars
+/debian/*.debhelper.log
