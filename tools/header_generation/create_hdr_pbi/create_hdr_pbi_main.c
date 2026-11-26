@@ -46,6 +46,7 @@ static struct option long_options[] = {
 	{"in", required_argument, 0, 'i'},
 	{"sben", no_argument, &gd.option_sb_en, 1},
 	{"srkh-file", required_argument, 0, 'k'},
+	{"srkh-le", no_argument, &gd.option_srkh_le, 1},
 	{"help", no_argument, &gd.help_flag, 1},
 	{0, 0, 0, 0}
 };

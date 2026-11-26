@@ -81,6 +81,16 @@ cat srkh.txt >> input_fuse_srkh
 ./gen_fusescr input_fuse_srkh > fuse_srkh.log 2>&1 || { cat fuse_srkh.log; fail "gen_fusescr with --srkh-file output"; }
 pass "--srkh-file output feeds gen_fusescr"
 
+# --srkh-le byte swaps each SRKH word for a little endian SFP
+./uni_sign --hash --srkh-file srkh_le.txt --srkh-le input_files/uni_sign/ls104x_1012/input_bootscript_secure > /dev/null 2>&1
+[ "$(wc -l < srkh_le.txt)" = 8 ] || fail "srkh_le.txt does not have 8 lines"
+for i in 0 1 2 3 4 5 6 7; do
+	w=$(grep "^SRKH_$i=" srkh.txt | cut -d= -f2)
+	want=$(echo "$w" | sed -E 's/(..)(..)(..)(..)/\4\3\2\1/')
+	grep -qx "SRKH_$i=$want" srkh_le.txt || fail "srkh_le.txt: SRKH_$i is not the byte swap of $w"
+done
+pass "--srkh-le byte swaps each SRKH word"
+
 # Two step flow: --img_hash, gen_sign, sign_embed
 cp hdr_bs.out hdr_bs.ref
 ./uni_sign --img_hash input_files/uni_sign/ls104x_1012/input_bootscript_secure > two_step.log 2>&1

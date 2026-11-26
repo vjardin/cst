@@ -227,6 +227,7 @@ struct g_data_t {
 
 	int option_srk_hash;
 	int option_img_hash;
+	int option_srkh_le;
 	int verbose_flag;
 	int help_flag;
 

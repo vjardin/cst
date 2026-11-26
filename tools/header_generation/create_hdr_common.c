@@ -51,6 +51,7 @@ static struct option long_options[] = {
 	{"app", required_argument, 0, 'a'},
 	{"app_off", required_argument, 0, 'o'},
 	{"srkh-file", required_argument, 0, 'k'},
+	{"srkh-le", no_argument, &gd.option_srkh_le, 1},
 	{"help", no_argument, &gd.help_flag, 1},
 	{0, 0, 0, 0}
 };
@@ -61,6 +62,8 @@ static void print_usage(char *tool)
 	printf("\t--hash             Print the SRK(Public key) hash.\n");
 	printf("\t--srkh-file <file> Write the SRK hash as the SRKH_0..SRKH_7\n");
 	printf("\t                   fields of a gen_fusescr input file\n");
+	printf("\t--srkh-le          With --srkh-file, byte swap each SRKH word\n");
+	printf("\t                   for a little endian SFP (e.g. LX2160A)\n");
 	printf("\t--img_hash         Header is generated without Signature.\n");
 	printf("\t                   Image Hash is stored in separate file.\n");
 	printf("\t--help             Show the Help for Tool Usage.\n");
@@ -565,6 +568,7 @@ int create_srkh_file(void)
 	int i;
 	FILE *fp;
 	uint32_t word;
+	const uint8_t *b;
 
 	fp = fopen(gd.srkh_file_name, "w");
 	if (fp == NULL) {
@@ -572,7 +576,15 @@ int create_srkh_file(void)
 		return FAILURE;
 	}
 	for (i = 0; i < SHA256_DIGEST_LENGTH / sizeof(uint32_t); i++) {
-		memcpy(&word, gd.srk_hash + i * sizeof(uint32_t), sizeof(word));
+		b = gd.srk_hash + i * sizeof(uint32_t);
+		if (gd.option_srkh_le) {
+			/* little endian SFP: the core writes the hash bytes
+			 * of each word in reverse order */
+			fprintf(fp, "SRKH_%d=%02x%02x%02x%02x\n", i,
+				b[3], b[2], b[1], b[0]);
+			continue;
+		}
+		memcpy(&word, b, sizeof(word));
 		fprintf(fp, "SRKH_%d=%08x\n", i, htonl(word));
 	}
 	if (fclose(fp) != 0) {
